@@ -247,6 +247,17 @@
     ContentSyncTask* sTask = [self findSyncDataByDownloadTask:downloadTask];
 
     NSHTTPURLResponse *response = (NSHTTPURLResponse *)downloadTask.response;
+
+    NSLog(@"statusCode %li", (long)[response statusCode]);
+
+    if ([response statusCode] != 200) {
+        NSString* errorMessage = [NSString stringWithFormat:@"Download Failed status=%li", (long)[response statusCode]];
+        NSLog(@"%@", errorMessage);
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:sTask.command.callbackId];
+        return;
+    }
+
     BOOL isZipContentType = [[[response allHeaderFields] valueForKey:@"Content-Type"] isEqual:@"application/zip"];
     BOOL isZipExtension = [[[[downloadURL absoluteString] pathExtension] lowercaseString] isEqual:@"zip"];
     BOOL isZip = isZipContentType || isZipExtension;
